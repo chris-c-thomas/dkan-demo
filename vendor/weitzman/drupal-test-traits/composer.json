@@ -1,0 +1,51 @@
+{
+    "name": "weitzman/drupal-test-traits",
+    "description": "Traits for testing Drupal sites that have user content (versus unpopulated sites).",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Moshe Weitzman",
+            "email": "weitzman@tejasa.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "weitzman\\DrupalTestTraits\\": "src" }
+    },
+    "scripts": {
+        "si": "drush si -yv --db-url=${SIMPLETEST_DB} --account-name=admin --account-pass=password standard",
+        "phpcs": "phpcs -n -s src tests",
+        "phpcbf": "phpcbf --standard=PSR2 -n src tests",
+        "lint": "parallel-lint src tests",
+        "unit": "phpunit --colors --bootstrap=src/bootstrap-fast.php --printer '\\Drupal\\Tests\\Listeners\\HtmlOutputPrinter' tests",
+        "test": [
+            "@lint",
+            "@cs",
+            "@unit"
+        ]
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "process-timeout": 9600,
+        "allow-plugins": {
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "drupal/core-composer-scaffold": true
+        }
+    },
+    "extra": {
+        "installer-paths": {
+            "web/core": ["type:drupal-core"]
+        },
+        "drupal-scaffold": {
+            "locations": {
+                "web-root": "web/"
+            },
+            "file-mapping": {
+                "[project-root]/.editorconfig": false,
+                "[project-root]/.gitattributes": false,
+                "[project-root]/.gitignore": false
+            }
+        }
+    }
+}

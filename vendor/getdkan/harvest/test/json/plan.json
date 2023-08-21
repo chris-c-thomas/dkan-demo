@@ -1,0 +1,14 @@
+{
+  "identifier": "test",
+  "extract": {
+    "type": "\\Harvest\\ETL\\Extract\\DataJson",
+    "uri": ""
+  },
+  "transforms": [
+    "\\Harvest\\ETL\\Transform\\AddId",
+    "\\Harvest\\ETL\\Transform\\AddRandomNumber"
+  ],
+  "load": {
+    "type": "\\Harvest\\ETL\\Load\\Simple"
+  }
+}

@@ -1,0 +1,7 @@
+.ddev
+.idea
+vendor
+composer.lock
+coverage
+.vscode
+.phpunit*

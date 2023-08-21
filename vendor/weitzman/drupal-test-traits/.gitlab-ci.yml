@@ -1,0 +1,64 @@
+include:
+  # This remote project centralize our CI "golden path" https://docs.gitlab.com/ee/ci/yaml/#includefile
+  remote: 'https://gitlab.com/drupalspoons/composer-plugin/-/raw/master/templates/.gitlab-ci.yml'
+
+#
+# Projects may override anything in the template above.
+#
+
+variables:
+  PHP_TAG: "8.1"
+  DCI_SKIP_ESLINT: 1
+  DCI_SKIP_STYLELINT: 1
+  DCI_SKIP_PHPUNIT: 1
+
+composer:
+  variables:
+    # See https://gitlab.com/drupalspoons/composer-plugin/-/merge_requests/56, then renamed.
+    COMPOSER_PLUGIN_PREPARE: "false"
+  parallel:
+    matrix:
+      - PHP_TAG: "7.4"
+        DRUPAL_CORE_CONSTRAINT: ^9
+      - PHP_TAG: "8.1"
+        DRUPAL_CORE_CONSTRAINT: 10.0.x-dev # ^10 is typical but a twig incompat in beta1 gives red.
+
+# Set allow_failure to false so that the test fails for coding standards faults.
+phpcs:
+  allow_failure: false
+
+.phpunit-local:
+  variables:
+    # Pin to fix failure https://gitlab.com/weitzman/drupal-test-traits/-/jobs/3311080541
+    # Possibly caused by https://github.com/SeleniumHQ/docker-selenium/issues/1723
+    SELENIUM_CHROME_TAG: "106.0"
+    DTT_BASE_URL: $SIMPLETEST_BASE_URL
+    DTT_MINK_DRIVER_ARGS: $MINK_DRIVER_ARGS_WEBDRIVER
+    SYMFONY_DEPRECATIONS_HELPER: weak
+  before_script:
+    #  Determine DB driver.
+    - |
+      [[ $DB_DRIVER == "sqlite" ]] && export SIMPLETEST_DB=sqlite://localhost/sites/default/files/.sqlite
+      [[ $DB_DRIVER == "mysql" ]] && export SIMPLETEST_DB=mysql://$MYSQL_USER:$MYSQL_PASSWORD@mariadb/$MYSQL_DATABASE
+      [[ $DB_DRIVER == "pgsql" ]] && export SIMPLETEST_DB=pgsql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres/$POSTGRES_DB
+    - composer si
+
+phpunit-d9:
+  dependencies:
+    # This syntax comes from https://gitlab.com/gitlab-org/gitlab/-/merge_requests/82734/diffs
+    - "composer: [7.4, ^9]"
+  variables:
+    PHP_TAG: "7.4"
+    DCI_SKIP_PHPUNIT: 0
+  extends:
+    - .phpunit-base
+    - .phpunit-local
+
+phpunit-d10:
+  dependencies:
+    - "composer: [8.1, 10.0.x-dev]"
+  variables:
+    DCI_SKIP_PHPUNIT: 0
+  extends:
+    - .phpunit-base
+    - .phpunit-local

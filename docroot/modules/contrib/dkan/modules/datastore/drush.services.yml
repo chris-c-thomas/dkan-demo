@@ -1,0 +1,16 @@
+services:
+  datastore:commands:
+    class: \Drupal\datastore\Drush
+    arguments:
+      - '@dkan.metastore.service'
+      - '@dkan.datastore.service'
+      - '@dkan.datastore.service.post_import'
+      - '@dkan.datastore.service.resource_localizer'
+    tags:
+      - { name: drush.command }
+  datastore.purger.commands:
+    class: Drupal\datastore\Commands\PurgeCommands
+    arguments:
+      - '@dkan.datastore.service.resource_purger'
+    tags:
+      - { name: drush.command }
